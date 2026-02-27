@@ -31,7 +31,66 @@ function formatDeadline(deadline: string | null): string | null {
   return `${dateStr} (还剩${days}天)`
 }
 
+function NodeEditForm({
+  node,
+  onSave,
+  onCancel,
+}: {
+  node: RouteNode
+  onSave: (updates: { title: string; tag: string | null; deadline: string | null }) => void
+  onCancel: () => void
+}) {
+  const [title, setTitle] = useState(node.title)
+  const [tag, setTag] = useState(node.tag || '')
+  const [deadline, setDeadline] = useState(
+    node.deadline ? new Date(node.deadline).toISOString().split('T')[0] : ''
+  )
+
+  return (
+    <div className="flex flex-col gap-2 p-3 border border-zinc-200 rounded-lg bg-zinc-50">
+      <input
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        placeholder="节点标题"
+        autoFocus
+        className="px-2 py-1 border border-zinc-200 rounded text-sm"
+      />
+      <div className="flex gap-2">
+        <input
+          value={tag}
+          onChange={e => setTag(e.target.value)}
+          placeholder="标签"
+          className="flex-1 px-2 py-1 border border-zinc-200 rounded text-sm"
+        />
+        <input
+          type="date"
+          value={deadline}
+          onChange={e => setDeadline(e.target.value)}
+          className="px-2 py-1 border border-zinc-200 rounded text-sm"
+        />
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => onSave({
+            title: title.trim() || node.title,
+            tag: tag.trim() || null,
+            deadline: deadline || null,
+          })}
+          className="px-3 py-1 bg-black text-white rounded text-xs"
+        >
+          保存
+        </button>
+        <button onClick={onCancel} className="px-3 py-1 text-zinc-500 text-xs">
+          取消
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTimelineProps) {
+  const [editingId, setEditingId] = useState<string | null>(null)
+
   const toggleComplete = async (node: RouteNode) => {
     if (!isOwner) return
     const { error } = await supabase
@@ -45,6 +104,17 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
     if (!isOwner) return
     const { error } = await supabase.from('route_nodes').delete().eq('id', id)
     if (!error) onNodesChange()
+  }
+
+  const saveEdit = async (id: string, updates: { title: string; tag: string | null; deadline: string | null }) => {
+    const { error } = await supabase
+      .from('route_nodes')
+      .update(updates)
+      .eq('id', id)
+    if (!error) {
+      setEditingId(null)
+      onNodesChange()
+    }
   }
 
   if (nodes.length === 0) {
@@ -68,10 +138,10 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
       <div className="flex flex-col">
         {nodes.map((node, i) => {
           const deadlineText = formatDeadline(node.deadline)
+          const isEditing = editingId === node.id
 
           return (
             <div key={node.id} className="flex gap-4 group">
-              {/* Timeline dot and line */}
               <div className="flex flex-col items-center">
                 <button
                   onClick={() => toggleComplete(node)}
@@ -89,34 +159,51 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
                 )}
               </div>
 
-              {/* Content */}
               <div className="pb-6 flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${
-                    node.completed ? 'text-emerald-700 line-through' : ''
-                  }`}>
-                    {node.order_index}. {node.title}
-                  </span>
-                  {node.tag && (
-                    <span className="text-xs px-1.5 py-0.5 bg-zinc-100 rounded text-zinc-500">
-                      {node.tag}
-                    </span>
-                  )}
-                  {isOwner && (
-                    <button
-                      onClick={() => deleteNode(node.id)}
-                      className="text-xs text-zinc-300 hover:text-red-500 opacity-0 group-hover:opacity-100"
-                    >
-                      删除
-                    </button>
-                  )}
-                </div>
-                {deadlineText && (
-                  <div className={`text-xs mt-0.5 ${
-                    node.completed ? 'text-emerald-500' : 'text-zinc-400'
-                  }`}>
-                    {deadlineText}
-                  </div>
+                {isEditing ? (
+                  <NodeEditForm
+                    node={node}
+                    onSave={(updates) => saveEdit(node.id, updates)}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium ${
+                        node.completed ? 'text-emerald-700 line-through' : ''
+                      }`}>
+                        {node.order_index}. {node.title}
+                      </span>
+                      {node.tag && (
+                        <span className="text-xs px-1.5 py-0.5 bg-zinc-100 rounded text-zinc-500">
+                          {node.tag}
+                        </span>
+                      )}
+                      {isOwner && (
+                        <span className="opacity-0 group-hover:opacity-100 flex gap-1">
+                          <button
+                            onClick={() => setEditingId(node.id)}
+                            className="text-xs text-zinc-400 hover:text-black"
+                          >
+                            编辑
+                          </button>
+                          <button
+                            onClick={() => deleteNode(node.id)}
+                            className="text-xs text-zinc-300 hover:text-red-500"
+                          >
+                            删除
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                    {deadlineText && (
+                      <div className={`text-xs mt-0.5 ${
+                        node.completed ? 'text-emerald-500' : 'text-zinc-400'
+                      }`}>
+                        {deadlineText}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

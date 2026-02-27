@@ -11,7 +11,9 @@ interface UserListProps {
   users: UserWithStats[]
   currentUserId: string
   viewingUserId: string
+  showAbout: boolean
   onSelectUser: (userId: string) => void
+  onShowAbout: () => void
   onLogout: () => void
 }
 
@@ -24,12 +26,14 @@ export default function UserList({
   users,
   currentUserId,
   viewingUserId,
+  showAbout,
   onSelectUser,
+  onShowAbout,
   onLogout,
 }: UserListProps) {
   return (
-    <aside className="w-56 border-r border-zinc-200 p-4 flex flex-col gap-4 shrink-0">
-      <div className="flex items-center justify-between">
+    <aside className="w-56 border-r border-zinc-200 p-4 flex flex-col shrink-0 h-screen">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-base font-bold">自习室</h1>
         <button
           onClick={onLogout}
@@ -39,9 +43,9 @@ export default function UserList({
         </button>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 flex-1 overflow-y-auto">
         {users.map(user => {
-          const isViewing = user.user_id === viewingUserId
+          const isViewing = user.user_id === viewingUserId && !showAbout
           const isSelf = user.user_id === currentUserId
           const rate = completionRate(user.total_nodes, user.completed_nodes)
 
@@ -73,6 +77,17 @@ export default function UserList({
           </div>
         )}
       </div>
+
+      <button
+        onClick={onShowAbout}
+        className={`mt-3 px-3 py-2 rounded text-sm text-left transition-colors ${
+          showAbout
+            ? 'bg-black text-white'
+            : 'text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600'
+        }`}
+      >
+        开发路线图
+      </button>
     </aside>
   )
 }

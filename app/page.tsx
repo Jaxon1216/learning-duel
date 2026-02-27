@@ -8,6 +8,7 @@ import RouteTabs from './components/RouteTabs'
 import NodeTimeline from './components/NodeTimeline'
 import AddNodeForm from './components/AddNodeForm'
 import ProfileCard from './components/ProfileCard'
+import Roadmap from './components/Roadmap'
 
 interface UserWithStats {
   user_id: string
@@ -34,6 +35,7 @@ export default function Home() {
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
   const [nodes, setNodes] = useState<any[]>([])
   const [profile, setProfile] = useState<any>(null)
+  const [showAbout, setShowAbout] = useState(false)
 
   const currentUserId = session?.user?.id || null
   const isOwner = currentUserId === viewingUserId
@@ -211,6 +213,7 @@ export default function Home() {
     setViewingUserId(userId)
     setActiveRouteId(null)
     setNodes([])
+    setShowAbout(false)
   }
 
   // ── Login page ──
@@ -267,79 +270,85 @@ export default function Home() {
         users={users}
         currentUserId={currentUserId}
         viewingUserId={viewingUserId || ''}
+        showAbout={showAbout}
         onSelectUser={handleSelectUser}
+        onShowAbout={() => setShowAbout(true)}
         onLogout={handleLogout}
       />
 
       {/* Right: Main content */}
       <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-2xl space-y-6">
-          {/* ① Macro goals banner */}
-          <section>
-            <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">宏观目标</div>
-            <GoalBanner
-              goals={goals}
-              isOwner={isOwner}
-              onGoalsChange={() => viewingUserId && fetchGoals(viewingUserId)}
-            />
-          </section>
-
-          {/* ② Route tabs */}
-          <section>
-            <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">学习路线</div>
-            <RouteTabs
-              routes={routes}
-              activeRouteId={activeRouteId}
-              isOwner={isOwner}
-              onSelectRoute={setActiveRouteId}
-              onRoutesChange={() => {
-                if (viewingUserId) {
-                  fetchRoutes(viewingUserId)
-                  fetchUsers()
-                }
-              }}
-            />
-          </section>
-
-          {/* ③ Node timeline */}
-          {activeRouteId && (
+        {showAbout ? (
+          <Roadmap />
+        ) : (
+          <div className="max-w-2xl space-y-6">
+            {/* ① Macro goals banner */}
             <section>
-              <NodeTimeline
-                nodes={nodes}
+              <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">宏观目标</div>
+              <GoalBanner
+                goals={goals}
                 isOwner={isOwner}
-                onNodesChange={() => {
-                  if (activeRouteId) fetchNodes(activeRouteId)
-                  fetchUsers()
+                onGoalsChange={() => viewingUserId && fetchGoals(viewingUserId)}
+              />
+            </section>
+
+            {/* ② Route tabs */}
+            <section>
+              <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">学习路线</div>
+              <RouteTabs
+                routes={routes}
+                activeRouteId={activeRouteId}
+                isOwner={isOwner}
+                onSelectRoute={setActiveRouteId}
+                onRoutesChange={() => {
+                  if (viewingUserId) {
+                    fetchRoutes(viewingUserId)
+                    fetchUsers()
+                  }
                 }}
               />
-              {isOwner && (
-                <AddNodeForm
-                  routeId={activeRouteId}
-                  currentMaxOrder={maxNodeOrder}
-                  onNodeAdded={() => {
-                    fetchNodes(activeRouteId)
+            </section>
+
+            {/* ③ Node timeline */}
+            {activeRouteId && (
+              <section>
+                <NodeTimeline
+                  nodes={nodes}
+                  isOwner={isOwner}
+                  onNodesChange={() => {
+                    if (activeRouteId) fetchNodes(activeRouteId)
                     fetchUsers()
                   }}
                 />
-              )}
-            </section>
-          )}
+                {isOwner && (
+                  <AddNodeForm
+                    routeId={activeRouteId}
+                    currentMaxOrder={maxNodeOrder}
+                    onNodeAdded={() => {
+                      fetchNodes(activeRouteId)
+                      fetchUsers()
+                    }}
+                  />
+                )}
+              </section>
+            )}
 
-          {/* ④ Profile card */}
-          {profile && (
-            <section>
-              <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">个人信息</div>
-              <ProfileCard
-                profile={profile}
-                isOwner={isOwner}
-                onProfileChange={() => {
-                  if (viewingUserId) fetchProfile(viewingUserId)
-                  fetchUsers()
-                }}
-              />
-            </section>
-          )}
-        </div>
+            {/* ④ Profile card */}
+            {profile && (
+              <section>
+                <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">个人信息</div>
+                <ProfileCard
+                  profile={profile}
+                  isOwner={isOwner}
+                  onProfileChange={() => {
+                    if (viewingUserId) fetchProfile(viewingUserId)
+                    fetchUsers()
+                  }}
+                />
+              </section>
+            )}
+          </div>
+        )}
       </main>
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface Profile {
@@ -29,6 +29,17 @@ export default function ProfileCard({ profile, isOwner, onProfileChange }: Profi
     contact_type: profile.contact_type || 'wx',
     contact_value: profile.contact_value || '',
   })
+
+  useEffect(() => {
+    setEditing(false)
+    setForm({
+      name: profile.name || '',
+      education: profile.education || '',
+      bio: profile.bio || '',
+      contact_type: profile.contact_type || 'wx',
+      contact_value: profile.contact_value || '',
+    })
+  }, [profile.user_id, profile.name, profile.education, profile.bio, profile.contact_type, profile.contact_value])
 
   const save = async () => {
     const { error } = await supabase
