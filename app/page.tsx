@@ -108,12 +108,24 @@ export default function Home() {
     setUsers(usersWithStats)
   }, [])
 
+  // Fetch users on mount and when session changes
   useEffect(() => {
-    if (session) {
-      fetchUsers()
-      if (!viewingUserId) setViewingUserId(currentUserId)
+    fetchUsers()
+  }, [fetchUsers, session])
+
+  // When session changes, set default viewing user to self
+  useEffect(() => {
+    if (currentUserId) {
+      setViewingUserId(currentUserId)
     }
-  }, [session, fetchUsers, currentUserId])
+  }, [currentUserId])
+
+  // When users load and no one is selected, default to first user
+  useEffect(() => {
+    if (!viewingUserId && users.length > 0) {
+      setViewingUserId(users[0].user_id)
+    }
+  }, [users])
 
   // ── Fetch viewed user's data ──
   const fetchGoals = useCallback(async (userId: string) => {
@@ -197,11 +209,12 @@ export default function Home() {
     }
   }
 
+  const [showLogin, setShowLogin] = useState(false)
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setSession(null)
-    setUsers([])
-    setViewingUserId(null)
+    setViewingUserId(users.length > 0 ? users[0].user_id : null)
     setGoals([])
     setRoutes([])
     setNodes([])
@@ -215,48 +228,6 @@ export default function Home() {
     setShowAbout(false)
   }
 
-  // ── Login page ──
-  if (!session) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col gap-3 w-80">
-          <h1 className="text-2xl font-bold">学习监督自习室</h1>
-          <p className="text-sm text-zinc-500">
-            {isSignUp ? '注册新账号' : '登录已有账号'}
-          </p>
-          <input
-            type="email"
-            value={loginEmail}
-            onChange={e => setLoginEmail(e.target.value)}
-            placeholder="邮箱"
-            className="px-3 py-2 border border-zinc-300 rounded text-sm"
-          />
-          <input
-            type="password"
-            value={loginPassword}
-            onChange={e => setLoginPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAuth()}
-            placeholder="密码（至少6位）"
-            className="px-3 py-2 border border-zinc-300 rounded text-sm"
-          />
-          <button
-            onClick={handleAuth}
-            disabled={authLoading}
-            className="px-4 py-2 bg-black text-white rounded text-sm disabled:opacity-50"
-          >
-            {authLoading ? '请稍候...' : isSignUp ? '注册' : '登录'}
-          </button>
-          <button
-            onClick={() => setIsSignUp(!isSignUp)}
-            className="text-xs text-zinc-400 hover:text-zinc-600"
-          >
-            {isSignUp ? '已有账号？去登录' : '没有账号？去注册'}
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   // ── Main layout ──
 
   return (
@@ -268,9 +239,11 @@ export default function Home() {
         viewingUserId={viewingUserId || ''}
         showAbout={showAbout}
         viewingProfile={profile}
+        isLoggedIn={!!session}
         onSelectUser={handleSelectUser}
         onShowAbout={() => setShowAbout(true)}
         onLogout={handleLogout}
+        onLogin={() => setShowLogin(true)}
       />
 
       {/* Right: Main content */}
@@ -354,6 +327,47 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Login modal */}
+      {showLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowLogin(false)}>
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-3" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold">{isSignUp ? '注册新账号' : '登录'}</h2>
+            <input
+              type="email"
+              value={loginEmail}
+              onChange={e => setLoginEmail(e.target.value)}
+              placeholder="邮箱"
+              autoFocus
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+            />
+            <input
+              type="password"
+              value={loginPassword}
+              onChange={e => setLoginPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAuth()}
+              placeholder="密码（至少6位）"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+            />
+            <button
+              onClick={async () => {
+                await handleAuth()
+                if (!isSignUp) setShowLogin(false)
+              }}
+              disabled={authLoading}
+              className="w-full px-4 py-2 bg-black text-white rounded-lg text-sm disabled:opacity-50"
+            >
+              {authLoading ? '请稍候...' : isSignUp ? '注册' : '登录'}
+            </button>
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-xs text-zinc-400 hover:text-zinc-600"
+            >
+              {isSignUp ? '已有账号？去登录' : '没有账号？去注册'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -18,13 +18,15 @@ interface Profile {
 
 interface UserListProps {
   users: UserWithStats[]
-  currentUserId: string
+  currentUserId: string | null
   viewingUserId: string
   showAbout: boolean
   viewingProfile: Profile | null
+  isLoggedIn: boolean
   onSelectUser: (userId: string) => void
   onShowAbout: () => void
   onLogout: () => void
+  onLogin: () => void
 }
 
 export default function UserList({
@@ -33,20 +35,31 @@ export default function UserList({
   viewingUserId,
   showAbout,
   viewingProfile,
+  isLoggedIn,
   onSelectUser,
   onShowAbout,
   onLogout,
+  onLogin,
 }: UserListProps) {
   return (
     <aside className="w-56 border-r border-zinc-200 flex flex-col shrink-0 h-screen">
       <div className="flex items-center justify-between p-4 pb-2">
         <h1 className="text-base font-bold">自习室</h1>
-        <button
-          onClick={onLogout}
-          className="text-xs text-zinc-400 hover:text-zinc-600"
-        >
-          登出
-        </button>
+        {isLoggedIn ? (
+          <button
+            onClick={onLogout}
+            className="text-xs text-zinc-400 hover:text-zinc-600"
+          >
+            登出
+          </button>
+        ) : (
+          <button
+            onClick={onLogin}
+            className="text-xs px-2.5 py-1 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
+          >
+            登录
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-0.5 px-3 flex-1 overflow-y-auto">
