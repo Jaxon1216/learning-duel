@@ -77,7 +77,7 @@ export default function AddNodeForm({ routeId, nodes, onNodeAdded }: AddNodeForm
   }
 
   return (
-    <div className="mt-6 p-4 border border-zinc-200 rounded-lg">
+    <div className="mt-6 pt-4 border-t border-zinc-200">
       <div className="text-sm font-medium mb-3">添加学习节点</div>
       <div className="flex flex-col gap-2">
         <input

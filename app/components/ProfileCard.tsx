@@ -61,109 +61,74 @@ export default function ProfileCard({ profile, isOwner, onProfileChange }: Profi
     }
   }
 
-  if (editing) {
-    return (
-      <div className="p-4 border border-zinc-200 rounded-lg space-y-3">
-        <div className="text-sm font-medium">编辑个人信息</div>
-        <input
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          placeholder="姓名"
-          className="w-full px-3 py-2 border border-zinc-200 rounded text-sm"
-        />
-        <input
-          value={form.education}
-          onChange={e => setForm(f => ({ ...f, education: e.target.value }))}
-          placeholder="学历"
-          className="w-full px-3 py-2 border border-zinc-200 rounded text-sm"
-        />
-        <input
-          value={form.bio}
-          onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
-          placeholder="一句话简介"
-          className="w-full px-3 py-2 border border-zinc-200 rounded text-sm"
-        />
-        <div className="flex gap-2 items-center">
-          <div className="flex gap-1">
-            {CONTACT_TYPES.map(ct => (
-              <button
-                key={ct}
-                onClick={() => setForm(f => ({ ...f, contact_type: ct }))}
-                className={`px-2 py-1 rounded text-xs ${
-                  form.contact_type === ct
-                    ? 'bg-black text-white'
-                    : 'bg-zinc-100 text-zinc-500'
-                }`}
-              >
-                {ct}
-              </button>
-            ))}
-          </div>
-          <input
-            value={form.contact_value}
-            onChange={e => setForm(f => ({ ...f, contact_value: e.target.value }))}
-            placeholder="联系方式"
-            className="flex-1 px-3 py-2 border border-zinc-200 rounded text-sm"
-          />
-        </div>
-        <div className="flex gap-2">
-          <button onClick={save} className="px-3 py-1.5 bg-black text-white rounded text-sm">
-            保存
-          </button>
-          <button onClick={() => setEditing(false)} className="px-3 py-1.5 text-zinc-500 text-sm">
-            取消
-          </button>
-        </div>
-      </div>
-    )
-  }
+  if (!isOwner) return null
 
   return (
-    <div className="p-4 border border-zinc-200 rounded-lg">
-      <div className="flex items-center justify-between mb-2">
-        <div className="font-medium">{profile.name || '未命名'}</div>
-        {isOwner && (
-          <button
-            onClick={() => setEditing(true)}
-            className="text-xs text-zinc-400 hover:text-zinc-600"
-          >
-            编辑
-          </button>
-        )}
-      </div>
+    <>
+      <button
+        onClick={() => setEditing(true)}
+        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+      >
+        编辑资料
+      </button>
 
-      {profile.education && (
-        <div className="text-sm text-zinc-500">{profile.education}</div>
-      )}
-      {profile.bio && (
-        <div className="text-sm text-zinc-600 mt-1">{profile.bio}</div>
-      )}
-      {profile.contact_value && (
-        <div className="flex items-center gap-2 mt-2">
-          {CONTACT_TYPES.map(ct => (
-            <span
-              key={ct}
-              className={`px-2 py-0.5 rounded text-xs ${
-                profile.contact_type === ct
-                  ? 'bg-black text-white'
-                  : 'bg-zinc-50 text-zinc-300'
-              }`}
-            >
-              {ct}
-            </span>
-          ))}
-          <span className="text-sm text-zinc-600">{profile.contact_value}</span>
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setEditing(false)}>
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md space-y-3" onClick={e => e.stopPropagation()}>
+            <div className="text-base font-semibold">编辑个人信息</div>
+            <input
+              value={form.name}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="姓名"
+              autoFocus
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+            />
+            <input
+              value={form.education}
+              onChange={e => setForm(f => ({ ...f, education: e.target.value }))}
+              placeholder="学历 / 学校"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+            />
+            <input
+              value={form.bio}
+              onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+              placeholder="一句话简介"
+              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+            />
+            <div className="flex gap-2 items-center">
+              <div className="flex gap-1">
+                {CONTACT_TYPES.map(ct => (
+                  <button
+                    key={ct}
+                    onClick={() => setForm(f => ({ ...f, contact_type: ct }))}
+                    className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${
+                      form.contact_type === ct
+                        ? 'bg-black text-white'
+                        : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                    }`}
+                  >
+                    {ct}
+                  </button>
+                ))}
+              </div>
+              <input
+                value={form.contact_value}
+                onChange={e => setForm(f => ({ ...f, contact_value: e.target.value }))}
+                placeholder="联系方式"
+                className="flex-1 px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button onClick={save} className="px-4 py-2 bg-black text-white rounded-lg text-sm">
+                保存
+              </button>
+              <button onClick={() => setEditing(false)} className="px-4 py-2 text-zinc-500 text-sm hover:text-zinc-700">
+                取消
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {!profile.education && !profile.bio && !profile.contact_value && !isOwner && (
-        <div className="text-sm text-zinc-400">该用户还没有填写个人信息</div>
-      )}
-      {!profile.education && !profile.bio && !profile.contact_value && isOwner && (
-        <div className="text-sm text-zinc-400">
-          点击右上角"编辑"填写你的信息
-        </div>
-      )}
-    </div>
+    </>
   )
 }

@@ -261,27 +261,46 @@ export default function Home() {
   // ── Main layout ──
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left: User list */}
+    <div className="flex h-screen overflow-hidden">
+      {/* Left: User list + profile summary */}
       <UserList
         users={users}
         currentUserId={currentUserId}
         viewingUserId={viewingUserId || ''}
         showAbout={showAbout}
+        viewingProfile={profile}
         onSelectUser={handleSelectUser}
         onShowAbout={() => setShowAbout(true)}
         onLogout={handleLogout}
       />
 
       {/* Right: Main content */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 px-8 py-6 overflow-y-auto bg-zinc-50/50">
         {showAbout ? (
           <Roadmap />
         ) : (
-          <div className="max-w-2xl space-y-6">
-            {/* ① Macro goals banner */}
-            <section>
-              <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">宏观目标</div>
+          <div className="space-y-5">
+            {/* ① Header: user name + edit profile button */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                {profile?.name || '未命名'}
+                {isOwner && <span className="text-zinc-400 font-normal text-sm ml-2">的学习空间</span>}
+              </h2>
+              {isOwner && profile && (
+                <ProfileCard
+                  profile={profile}
+                  isOwner={isOwner}
+                  onProfileChange={() => {
+                    if (viewingUserId) fetchProfile(viewingUserId)
+                    fetchUsers()
+                  }}
+                />
+              )}
+            </div>
+
+            {/* ② Macro goals */}
+            <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
+              <div className="text-xs text-zinc-400 mb-2 font-medium">宏观目标</div>
               <GoalBanner
                 goals={goals}
                 isOwner={isOwner}
@@ -289,9 +308,9 @@ export default function Home() {
               />
             </section>
 
-            {/* ② Route tabs */}
-            <section>
-              <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">学习路线</div>
+            {/* ③ Route tabs */}
+            <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
+              <div className="text-xs text-zinc-400 mb-2 font-medium">学习路线</div>
               <RouteTabs
                 routes={routes}
                 activeRouteId={activeRouteId}
@@ -306,9 +325,9 @@ export default function Home() {
               />
             </section>
 
-            {/* ③ Node timeline */}
-            {activeRouteId && (
-              <section>
+            {/* ④ Node timeline */}
+            {activeRouteId ? (
+              <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
                 <NodeTimeline
                   nodes={nodes}
                   isOwner={isOwner}
@@ -317,32 +336,21 @@ export default function Home() {
                     fetchUsers()
                   }}
                 />
-              {isOwner && (
-                <AddNodeForm
-                  routeId={activeRouteId}
-                  nodes={nodes.map(n => ({ id: n.id, title: n.title, order_index: n.order_index }))}
-                  onNodeAdded={() => {
-                    fetchNodes(activeRouteId)
-                    fetchUsers()
-                  }}
-                />
-              )}
+                {isOwner && (
+                  <AddNodeForm
+                    routeId={activeRouteId}
+                    nodes={nodes.map(n => ({ id: n.id, title: n.title, order_index: n.order_index }))}
+                    onNodeAdded={() => {
+                      fetchNodes(activeRouteId)
+                      fetchUsers()
+                    }}
+                  />
+                )}
               </section>
-            )}
-
-            {/* ④ Profile card */}
-            {profile && (
-              <section>
-                <div className="text-xs text-zinc-400 mb-2 uppercase tracking-wide">个人信息</div>
-                <ProfileCard
-                  profile={profile}
-                  isOwner={isOwner}
-                  onProfileChange={() => {
-                    if (viewingUserId) fetchProfile(viewingUserId)
-                    fetchUsers()
-                  }}
-                />
-              </section>
+            ) : (
+              <div className="text-zinc-400 text-sm py-4">
+                {isOwner ? '创建一条学习路线开始吧' : '该用户还没有学习路线'}
+              </div>
             )}
           </div>
         )}
