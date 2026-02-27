@@ -259,9 +259,6 @@ export default function Home() {
   }
 
   // ── Main layout ──
-  const maxNodeOrder = nodes.length > 0
-    ? Math.max(...nodes.map(n => n.order_index))
-    : 0
 
   return (
     <div className="flex min-h-screen">
@@ -320,16 +317,16 @@ export default function Home() {
                     fetchUsers()
                   }}
                 />
-                {isOwner && (
-                  <AddNodeForm
-                    routeId={activeRouteId}
-                    currentMaxOrder={maxNodeOrder}
-                    onNodeAdded={() => {
-                      fetchNodes(activeRouteId)
-                      fetchUsers()
-                    }}
-                  />
-                )}
+              {isOwner && (
+                <AddNodeForm
+                  routeId={activeRouteId}
+                  nodes={nodes.map(n => ({ id: n.id, title: n.title, order_index: n.order_index }))}
+                  onNodeAdded={() => {
+                    fetchNodes(activeRouteId)
+                    fetchUsers()
+                  }}
+                />
+              )}
               </section>
             )}
 
