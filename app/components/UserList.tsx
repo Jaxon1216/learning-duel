@@ -17,11 +17,6 @@ interface UserListProps {
   onLogout: () => void
 }
 
-function completionRate(total: number, completed: number): string {
-  if (total === 0) return '0.00'
-  return ((completed / total) * 100).toFixed(2)
-}
-
 export default function UserList({
   users,
   currentUserId,
@@ -47,27 +42,18 @@ export default function UserList({
         {users.map(user => {
           const isViewing = user.user_id === viewingUserId && !showAbout
           const isSelf = user.user_id === currentUserId
-          const rate = completionRate(user.total_nodes, user.completed_nodes)
-
           return (
             <button
               key={user.user_id}
               onClick={() => onSelectUser(user.user_id)}
-              className={`flex items-center justify-between px-3 py-2 rounded text-sm text-left transition-colors ${
+              className={`px-3 py-2 rounded text-sm text-left transition-colors truncate ${
                 isViewing
                   ? 'bg-black text-white'
                   : 'hover:bg-zinc-100'
               }`}
             >
-              <span className="truncate">
-                {user.name || '未命名'}
-                {isSelf && ' (我)'}
-              </span>
-              <span className={`text-xs shrink-0 ml-2 ${
-                isViewing ? 'text-zinc-300' : 'text-zinc-400'
-              }`}>
-                {rate}%
-              </span>
+              {user.name || '未命名'}
+              {isSelf && ' (我)'}
             </button>
           )
         })}
