@@ -29,17 +29,17 @@ export default function RouteTabs({
 
   const addRoute = async () => {
     if (!newName.trim()) return
-    const { data, error } = await supabase
+    const maxOrder = routes.length > 0 ? Math.max(...routes.map(r => r.order_index)) + 1 : 0
+    const { error } = await supabase
       .from('routes')
-      .insert([{ name: newName.trim(), order_index: routes.length }])
+      .insert([{ name: newName.trim(), order_index: maxOrder }])
       .select()
     if (error) {
       alert('创建路线失败: ' + error.message)
-    } else if (data?.[0]) {
+    } else {
       setNewName('')
       setAdding(false)
       onRoutesChange()
-      onSelectRoute(data[0].id)
     }
   }
 
@@ -48,6 +48,18 @@ export default function RouteTabs({
     if (!confirm('删除路线？所有节点也会一起删除。')) return
     const { error } = await supabase.from('routes').delete().eq('id', id)
     if (!error) onRoutesChange()
+  }
+
+  const pinRoute = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    for (const r of routes) {
+      if (r.id === id) {
+        await supabase.from('routes').update({ order_index: 0 }).eq('id', r.id)
+      } else if (r.order_index < routes.find(x => x.id === id)!.order_index) {
+        await supabase.from('routes').update({ order_index: r.order_index + 1 }).eq('id', r.id)
+      }
+    }
+    onRoutesChange()
   }
 
   return (
@@ -64,15 +76,29 @@ export default function RouteTabs({
         >
           {route.name}
           {isOwner && (
-            <span
-              onClick={(e) => deleteRoute(route.id, e)}
-              className={`text-xs opacity-0 group-hover:opacity-100 ml-0.5 ${
-                activeRouteId === route.id
-                  ? 'text-zinc-400 hover:text-white'
-                  : 'text-zinc-400 hover:text-red-500'
-              }`}
-            >
-              ✕
+            <span className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 ml-1">
+              {route.order_index !== 0 && (
+                <span
+                  onClick={(e) => pinRoute(route.id, e)}
+                  className={`text-[10px] px-1.5 py-0.5 rounded ${
+                    activeRouteId === route.id
+                      ? 'bg-white/20 text-white hover:bg-white/40'
+                      : 'bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700'
+                  }`}
+                >
+                  置顶
+                </span>
+              )}
+              <span
+                onClick={(e) => deleteRoute(route.id, e)}
+                className={`text-xs ${
+                  activeRouteId === route.id
+                    ? 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-400 hover:text-red-500'
+                }`}
+              >
+                ✕
+              </span>
             </span>
           )}
         </button>

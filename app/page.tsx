@@ -132,11 +132,10 @@ export default function Home() {
       .eq('user_id', userId)
       .order('order_index', { ascending: true })
     setRoutes(data || [])
-    if (data && data.length > 0) {
-      setActiveRouteId(data[0].id)
-    } else {
-      setActiveRouteId(null)
-    }
+    setActiveRouteId(prev => {
+      if (prev && data?.some(r => r.id === prev)) return prev
+      return data?.[0]?.id ?? null
+    })
   }, [])
 
   const fetchNodes = useCallback(async (routeId: string) => {
