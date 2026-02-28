@@ -9,6 +9,7 @@ import NodeTimeline from './components/NodeTimeline'
 import AddNodeForm from './components/AddNodeForm'
 import ProfileCard from './components/ProfileCard'
 import Roadmap from './components/Roadmap'
+import Architecture from './components/Architecture'
 
 interface UserWithStats {
   user_id: string
@@ -36,6 +37,7 @@ export default function Home() {
   const [nodes, setNodes] = useState<any[]>([])
   const [profile, setProfile] = useState<any>(null)
   const [showAbout, setShowAbout] = useState(false)
+  const [showArchitecture, setShowArchitecture] = useState(false)
 
   const currentUserId = session?.user?.id || null
   const isOwner = currentUserId === viewingUserId
@@ -221,11 +223,34 @@ export default function Home() {
     setProfile(null)
   }
 
+  const handleDeleteAccount = async () => {
+    const token = session?.access_token
+    if (!token) return
+    const res = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (res.ok) {
+      await supabase.auth.signOut()
+      setSession(null)
+      setViewingUserId(users.length > 0 ? users[0].user_id : null)
+      setGoals([])
+      setRoutes([])
+      setNodes([])
+      setProfile(null)
+      fetchUsers()
+    } else {
+      const { error } = await res.json()
+      alert(error || '注销失败')
+    }
+  }
+
   const handleSelectUser = (userId: string) => {
     setViewingUserId(userId)
     setActiveRouteId(null)
     setNodes([])
     setShowAbout(false)
+    setShowArchitecture(false)
   }
 
   // ── Main layout ──
@@ -238,17 +263,22 @@ export default function Home() {
         currentUserId={currentUserId}
         viewingUserId={viewingUserId || ''}
         showAbout={showAbout}
+        showArchitecture={showArchitecture}
         viewingProfile={profile}
         isLoggedIn={!!session}
         onSelectUser={handleSelectUser}
-        onShowAbout={() => setShowAbout(true)}
+        onShowAbout={() => { setShowAbout(true); setShowArchitecture(false) }}
+        onShowArchitecture={() => { setShowArchitecture(true); setShowAbout(false) }}
         onLogout={handleLogout}
         onLogin={() => setShowLogin(true)}
+        onDeleteAccount={handleDeleteAccount}
       />
 
       {/* Right: Main content */}
       <main className="flex-1 px-8 py-6 overflow-y-auto bg-zinc-50/50">
-        {showAbout ? (
+        {showArchitecture ? (
+          <Architecture />
+        ) : showAbout ? (
           <Roadmap />
         ) : (
           <div className="space-y-5">
