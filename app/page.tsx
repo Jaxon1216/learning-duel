@@ -25,12 +25,9 @@ export default function Home() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
 
-  // All users with completion stats
   const [users, setUsers] = useState<UserWithStats[]>([])
-  // Which user we're viewing
   const [viewingUserId, setViewingUserId] = useState<string | null>(null)
 
-  // Viewed user's data
   const [goals, setGoals] = useState<any[]>([])
   const [routes, setRoutes] = useState<any[]>([])
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
@@ -42,7 +39,6 @@ export default function Home() {
   const currentUserId = session?.user?.id || null
   const isOwner = currentUserId === viewingUserId
 
-  // ── Auth ──
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
@@ -53,7 +49,6 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Ensure profile exists for current user
   useEffect(() => {
     if (!currentUserId) return
     supabase
@@ -71,7 +66,6 @@ export default function Home() {
       })
   }, [currentUserId])
 
-  // ── Fetch all users with stats ──
   const fetchUsers = useCallback(async () => {
     const { data: profiles } = await supabase
       .from('profiles')
@@ -110,26 +104,22 @@ export default function Home() {
     setUsers(usersWithStats)
   }, [])
 
-  // Fetch users on mount and when session changes
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers, session])
 
-  // When session changes, set default viewing user to self
   useEffect(() => {
     if (currentUserId) {
       setViewingUserId(currentUserId)
     }
   }, [currentUserId])
 
-  // When users load and no one is selected, default to first user
   useEffect(() => {
     if (!viewingUserId && users.length > 0) {
       setViewingUserId(users[0].user_id)
     }
   }, [users])
 
-  // ── Fetch viewed user's data ──
   const fetchGoals = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('goals')
@@ -182,7 +172,6 @@ export default function Home() {
     else setNodes([])
   }, [activeRouteId, fetchNodes])
 
-  // ── Handlers ──
   const handleAuth = async () => {
     if (!loginEmail.trim() || !loginPassword.trim()) return
     setAuthLoading(true)
@@ -253,11 +242,8 @@ export default function Home() {
     setShowArchitecture(false)
   }
 
-  // ── Main layout ──
-
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Left: User list + profile summary */}
+    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
       <UserList
         users={users}
         currentUserId={currentUserId}
@@ -274,19 +260,20 @@ export default function Home() {
         onDeleteAccount={handleDeleteAccount}
       />
 
-      {/* Right: Main content */}
-      <main className="flex-1 px-8 py-6 overflow-y-auto bg-zinc-50/50">
+      <main className="flex-1 px-10 py-8 overflow-y-auto">
         {showArchitecture ? (
           <Architecture />
         ) : showAbout ? (
           <Roadmap />
         ) : (
-          <div className="space-y-5">
-            {/* ① Header: user name + edit profile button */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
+          <div className="space-y-6">
+            {/* Header */}
+            <div
+              className="flex items-center justify-between animate-fade-in-up"
+            >
+              <h2 className="text-xl font-semibold text-slate-800 tracking-tight">
                 {profile?.name || '未命名'}
-                {isOwner && <span className="text-zinc-400 font-normal text-sm ml-2">的学习空间</span>}
+                {isOwner && <span className="text-slate-400 font-normal text-sm ml-2">的学习空间</span>}
               </h2>
               {isOwner && profile && (
                 <ProfileCard
@@ -300,9 +287,12 @@ export default function Home() {
               )}
             </div>
 
-            {/* ② Macro goals */}
-            <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
-              <div className="text-xs text-zinc-400 mb-2 font-medium">宏观目标</div>
+            {/* Macro goals */}
+            <section
+              className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
+              style={{ animationDelay: '50ms' }}
+            >
+              <div className="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider">宏观目标</div>
               <GoalBanner
                 goals={goals}
                 isOwner={isOwner}
@@ -310,9 +300,12 @@ export default function Home() {
               />
             </section>
 
-            {/* ③ Route tabs */}
-            <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
-              <div className="text-xs text-zinc-400 mb-2 font-medium">学习路线</div>
+            {/* Route tabs */}
+            <section
+              className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
+              style={{ animationDelay: '100ms' }}
+            >
+              <div className="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider">学习路线</div>
               <RouteTabs
                 routes={routes}
                 activeRouteId={activeRouteId}
@@ -327,9 +320,12 @@ export default function Home() {
               />
             </section>
 
-            {/* ④ Node timeline */}
+            {/* Node timeline */}
             {activeRouteId ? (
-              <section className="bg-white rounded-xl border border-zinc-200 px-5 py-4">
+              <section
+                className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
+                style={{ animationDelay: '150ms' }}
+              >
                 <NodeTimeline
                   nodes={nodes}
                   isOwner={isOwner}
@@ -350,7 +346,7 @@ export default function Home() {
                 )}
               </section>
             ) : (
-              <div className="text-zinc-400 text-sm py-4">
+              <div className="text-slate-400 text-sm py-4 animate-fade-in-up">
                 {isOwner ? '创建一条学习路线开始吧' : '该用户还没有学习路线'}
               </div>
             )}
@@ -360,16 +356,19 @@ export default function Home() {
 
       {/* Login modal */}
       {showLogin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowLogin(false)}>
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-3" onClick={e => e.stopPropagation()}>
-            <h2 className="text-lg font-semibold">{isSignUp ? '注册新账号' : '登录'}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowLogin(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-sm space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">{isSignUp ? '注册新账号' : '欢迎回来'}</h2>
+              <p className="text-sm text-slate-400 mt-0.5">{isSignUp ? '创建账号加入自习室' : '登录你的学习空间'}</p>
+            </div>
             <input
               type="email"
               value={loginEmail}
               onChange={e => setLoginEmail(e.target.value)}
               placeholder="邮箱"
               autoFocus
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
             <input
               type="password"
@@ -377,7 +376,7 @@ export default function Home() {
               onChange={e => setLoginPassword(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAuth()}
               placeholder="密码（至少6位）"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
             <button
               onClick={async () => {
@@ -385,13 +384,13 @@ export default function Home() {
                 if (!isSignUp) setShowLogin(false)
               }}
               disabled={authLoading}
-              className="w-full px-4 py-2 bg-black text-white rounded-lg text-sm disabled:opacity-50"
+              className="w-full px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
             >
               {authLoading ? '请稍候...' : isSignUp ? '注册' : '登录'}
             </button>
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-xs text-zinc-400 hover:text-zinc-600"
+              className="text-xs text-slate-400 hover:text-indigo-600 transition-colors"
             >
               {isSignUp ? '已有账号？去登录' : '没有账号？去注册'}
             </button>

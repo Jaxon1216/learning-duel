@@ -27,9 +27,7 @@ export default function AddNodeForm({ routeId, nodes, onNodeAdded }: AddNodeForm
     let newOrderIndex: number
 
     if (insertAfter === 'start') {
-      // Insert at the very beginning
       newOrderIndex = 1
-      // Shift all existing nodes down by 1
       for (const node of nodes) {
         await supabase
           .from('route_nodes')
@@ -37,17 +35,14 @@ export default function AddNodeForm({ routeId, nodes, onNodeAdded }: AddNodeForm
           .eq('id', node.id)
       }
     } else if (insertAfter === 'end') {
-      // Append to end
       newOrderIndex = nodes.length > 0
         ? Math.max(...nodes.map(n => n.order_index)) + 1
         : 1
     } else {
-      // Insert after a specific node
       const afterNode = nodes.find(n => n.id === insertAfter)
       if (!afterNode) return
       newOrderIndex = afterNode.order_index + 1
 
-      // Shift nodes that come after
       const toShift = nodes.filter(n => n.order_index > afterNode.order_index)
       for (const node of toShift) {
         await supabase
@@ -77,35 +72,35 @@ export default function AddNodeForm({ routeId, nodes, onNodeAdded }: AddNodeForm
   }
 
   return (
-    <div className="mt-6 pt-4 border-t border-zinc-200">
-      <div className="text-sm font-medium mb-3">添加学习节点</div>
-      <div className="flex flex-col gap-2">
+    <div className="mt-6 pt-5 border-t border-slate-100">
+      <div className="text-sm font-medium text-slate-700 mb-3">添加学习节点</div>
+      <div className="flex flex-col gap-2.5">
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
           placeholder="节点标题（必填）"
-          className="px-3 py-2 border border-zinc-200 rounded text-sm"
+          className="px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
         />
         <div className="flex gap-2">
           <input
             value={tag}
             onChange={e => setTag(e.target.value)}
             placeholder="标签（选填）"
-            className="flex-1 px-3 py-2 border border-zinc-200 rounded text-sm"
+            className="flex-1 px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
           />
           <input
             type="date"
             value={deadline}
             onChange={e => setDeadline(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 rounded text-sm"
+            className="px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
           />
         </div>
         {nodes.length > 0 && (
           <select
             value={insertAfter}
             onChange={e => setInsertAfter(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 rounded text-sm bg-white"
+            className="px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
           >
             <option value="end">插入到末尾</option>
             <option value="start">插入到最前面</option>
@@ -119,7 +114,7 @@ export default function AddNodeForm({ routeId, nodes, onNodeAdded }: AddNodeForm
         <button
           onClick={handleSubmit}
           disabled={!title.trim()}
-          className="px-4 py-2 bg-black text-white rounded text-sm disabled:opacity-30 w-fit"
+          className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium disabled:opacity-30 w-fit hover:bg-indigo-700 transition-colors"
         >
           添加节点
         </button>

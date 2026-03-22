@@ -43,13 +43,13 @@ export default function GoalBanner({ goals, isOwner, onGoalsChange }: GoalBanner
       {goals.map(goal => (
         <span
           key={goal.id}
-          className="inline-flex items-center gap-1 px-3 py-1 bg-zinc-100 rounded-full text-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium"
         >
           {goal.title}
           {isOwner && (
             <button
               onClick={() => removeGoal(goal.id)}
-              className="text-zinc-400 hover:text-red-500 text-xs ml-1"
+              className="text-indigo-300 hover:text-red-500 text-xs ml-0.5 transition-colors"
             >
               ✕
             </button>
@@ -59,7 +59,7 @@ export default function GoalBanner({ goals, isOwner, onGoalsChange }: GoalBanner
 
       {isOwner && goals.length < 5 && (
         adding ? (
-          <div className="inline-flex items-center gap-1">
+          <div className="inline-flex items-center gap-1.5">
             <input
               value={newTitle}
               onChange={e => setNewTitle(e.target.value)}
@@ -69,16 +69,16 @@ export default function GoalBanner({ goals, isOwner, onGoalsChange }: GoalBanner
               }}
               placeholder="目标名称"
               autoFocus
-              className="px-2 py-1 border border-zinc-200 rounded text-sm w-32"
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
-            <button onClick={addGoal} className="text-sm text-zinc-600 hover:text-black">
+            <button onClick={addGoal} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
               确定
             </button>
           </div>
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="px-3 py-1 border border-dashed border-zinc-300 rounded-full text-sm text-zinc-400 hover:text-zinc-600 hover:border-zinc-400"
+            className="px-3 py-1.5 border border-dashed border-slate-300 rounded-full text-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
           >
             + 添加目标
           </button>
@@ -86,7 +86,7 @@ export default function GoalBanner({ goals, isOwner, onGoalsChange }: GoalBanner
       )}
 
       {goals.length === 0 && !isOwner && (
-        <span className="text-sm text-zinc-400">暂无宏观目标</span>
+        <span className="text-sm text-slate-400">暂无宏观目标</span>
       )}
     </div>
   )

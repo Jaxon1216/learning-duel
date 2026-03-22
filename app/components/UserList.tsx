@@ -54,20 +54,20 @@ export default function UserList({
 
   return (
     <>
-      <aside className="w-56 border-r border-zinc-200 flex flex-col shrink-0 h-screen">
-        <div className="flex items-center justify-between p-4 pb-2">
-          <h1 className="text-base font-bold">自习室</h1>
+      <aside className="w-60 bg-slate-50 border-r border-slate-200/80 flex flex-col shrink-0 h-screen">
+        <div className="flex items-center justify-between px-5 py-4">
+          <h1 className="text-base font-bold text-slate-800 tracking-tight">自习室</h1>
           {isLoggedIn ? (
             <button
               onClick={onLogout}
-              className="text-xs text-zinc-400 hover:text-zinc-600"
+              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
             >
               登出
             </button>
           ) : (
             <button
               onClick={onLogin}
-              className="text-xs px-2.5 py-1 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
+              className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium"
             >
               登录
             </button>
@@ -82,62 +82,62 @@ export default function UserList({
               <button
                 key={user.user_id}
                 onClick={() => onSelectUser(user.user_id)}
-                className={`px-3 py-1.5 rounded text-sm text-left transition-colors truncate ${
+                className={`px-3 py-2 rounded-lg text-sm text-left transition-all truncate ${
                   isViewing
-                    ? 'bg-black text-white'
-                    : 'hover:bg-zinc-100'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
                 {user.name || '未命名'}
-                {isSelf && ' (我)'}
+                {isSelf && <span className={isViewing ? 'text-indigo-200' : 'text-slate-400'}> (我)</span>}
               </button>
             )
           })}
           {users.length === 0 && (
-            <div className="text-sm text-zinc-400 py-4 text-center">
+            <div className="text-sm text-slate-400 py-4 text-center">
               暂无用户
             </div>
           )}
         </div>
 
         {viewingProfile && !showAbout && !showArchitecture && (
-          <div className="border-t border-zinc-200 px-4 py-3">
-            <div className="text-xs text-zinc-400 mb-1.5">个人信息</div>
-            <div className="text-sm font-medium truncate">{viewingProfile.name || '未命名'}</div>
+          <div className="border-t border-slate-200/80 px-5 py-4">
+            <div className="text-[11px] text-slate-400 mb-2 font-medium uppercase tracking-wider">个人信息</div>
+            <div className="text-sm font-medium text-slate-700 truncate">{viewingProfile.name || '未命名'}</div>
             {viewingProfile.education && (
-              <div className="text-xs text-zinc-500 mt-0.5">{viewingProfile.education}</div>
+              <div className="text-xs text-slate-500 mt-1">{viewingProfile.education}</div>
             )}
             {viewingProfile.bio && (
-              <div className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{viewingProfile.bio}</div>
+              <div className="text-xs text-slate-500 mt-1 line-clamp-2">{viewingProfile.bio}</div>
             )}
             {viewingProfile.contact_value && (
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="text-[10px] px-1.5 py-0.5 bg-black text-white rounded">
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded font-medium">
                   {viewingProfile.contact_type || 'wx'}
                 </span>
-                <span className="text-xs text-zinc-600 truncate">{viewingProfile.contact_value}</span>
+                <span className="text-xs text-slate-500 truncate">{viewingProfile.contact_value}</span>
               </div>
             )}
           </div>
         )}
 
-        <div className="border-t border-zinc-200 px-3 py-2 space-y-0.5">
+        <div className="border-t border-slate-200/80 px-3 py-2 space-y-0.5">
           <button
             onClick={onShowArchitecture}
-            className={`w-full px-3 py-1.5 rounded text-sm text-left transition-colors ${
+            className={`w-full px-3 py-2 rounded-lg text-sm text-left transition-all ${
               showArchitecture
-                ? 'bg-black text-white'
-                : 'text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
             }`}
           >
             架构流程图
           </button>
           <button
             onClick={onShowAbout}
-            className={`w-full px-3 py-1.5 rounded text-sm text-left transition-colors ${
+            className={`w-full px-3 py-2 rounded-lg text-sm text-left transition-all ${
               showAbout
-                ? 'bg-black text-white'
-                : 'text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
             }`}
           >
             开发路线图
@@ -145,10 +145,10 @@ export default function UserList({
         </div>
 
         {isLoggedIn && (
-          <div className="border-t border-zinc-200 px-3 py-2">
+          <div className="border-t border-slate-200/80 px-3 py-2">
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full px-3 py-1.5 rounded text-xs text-left text-red-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+              className="w-full px-3 py-2 rounded-lg text-xs text-left text-red-400 hover:bg-red-50 hover:text-red-500 transition-colors"
             >
               注销账号
             </button>
@@ -157,16 +157,16 @@ export default function UserList({
       </aside>
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-sm space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-red-600">确认注销账号</h2>
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-slate-600 leading-relaxed">
               注销后，你的所有数据（个人信息、学习路线、节点记录）将被永久删除，且无法恢复。
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 border border-zinc-200 rounded-lg text-sm hover:bg-zinc-50"
+                className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm hover:bg-slate-50 transition-colors"
               >
                 取消
               </button>
@@ -178,7 +178,7 @@ export default function UserList({
                   setShowDeleteConfirm(false)
                 }}
                 disabled={deleteLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
                 {deleteLoading ? '处理中...' : '确认注销'}
               </button>

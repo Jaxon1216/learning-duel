@@ -47,26 +47,26 @@ function NodeEditForm({
   )
 
   return (
-    <div className="flex flex-col gap-2 p-3 border border-zinc-200 rounded-lg bg-zinc-50">
+    <div className="flex flex-col gap-2 p-3 border border-slate-200 rounded-lg bg-slate-50">
       <input
         value={title}
         onChange={e => setTitle(e.target.value)}
         placeholder="节点标题"
         autoFocus
-        className="px-2 py-1 border border-zinc-200 rounded text-sm"
+        className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
       />
       <div className="flex gap-2">
         <input
           value={tag}
           onChange={e => setTag(e.target.value)}
           placeholder="标签"
-          className="flex-1 px-2 py-1 border border-zinc-200 rounded text-sm"
+          className="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
         />
         <input
           type="date"
           value={deadline}
           onChange={e => setDeadline(e.target.value)}
-          className="px-2 py-1 border border-zinc-200 rounded text-sm"
+          className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
         />
       </div>
       <div className="flex gap-2">
@@ -76,11 +76,11 @@ function NodeEditForm({
             tag: tag.trim() || null,
             deadline: deadline || null,
           })}
-          className="px-3 py-1 bg-black text-white rounded text-xs"
+          className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors"
         >
           保存
         </button>
-        <button onClick={onCancel} className="px-3 py-1 text-zinc-500 text-xs">
+        <button onClick={onCancel} className="px-3 py-1.5 text-slate-500 text-xs hover:text-slate-700 transition-colors">
           取消
         </button>
       </div>
@@ -119,7 +119,7 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
 
   if (nodes.length === 0) {
     return (
-      <div className="text-zinc-400 text-sm py-4">
+      <div className="text-slate-400 text-sm py-4">
         {isOwner ? '还没有学习节点，从下方开始添加' : '暂无学习节点'}
       </div>
     )
@@ -127,17 +127,33 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
 
   const total = nodes.length
   const completed = nodes.filter(n => n.completed).length
-  const rate = total > 0 ? ((completed / total) * 100).toFixed(2) : '0.00'
+  const pct = total > 0 ? (completed / total) * 100 : 0
 
   return (
     <div>
-      <div className="text-sm text-zinc-500 mb-4">
-        进度: {completed}/{total} ({rate}%)
+      {/* Progress bar */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-slate-500">学习进度</span>
+          <span className="text-sm font-medium text-slate-700">{completed}/{total}<span className="text-slate-400 ml-1">({pct.toFixed(1)}%)</span></span>
+        </div>
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full animate-progress transition-all"
+            style={{
+              width: `${pct}%`,
+              background: pct === 100
+                ? 'linear-gradient(90deg, #059669, #10b981)'
+                : 'linear-gradient(90deg, #4f46e5, #818cf8)',
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col">
         {nodes.map((node, i) => {
           const deadlineText = formatDeadline(node.deadline)
+          const isOverdue = deadlineText?.includes('已过期') && !node.completed
           const isEditing = editingId === node.id
 
           return (
@@ -146,15 +162,15 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
                 <button
                   onClick={() => toggleComplete(node)}
                   disabled={!isOwner}
-                  className={`w-3.5 h-3.5 rounded-full shrink-0 mt-1.5 border-2 transition-colors ${
+                  className={`w-4 h-4 rounded-full shrink-0 mt-1 border-2 transition-all ${
                     node.completed
-                      ? 'bg-emerald-500 border-emerald-500'
-                      : 'bg-white border-zinc-300'
-                  } ${isOwner ? 'cursor-pointer hover:border-emerald-400' : ''}`}
+                      ? 'bg-emerald-500 border-emerald-500 shadow-sm shadow-emerald-200'
+                      : 'bg-white border-slate-300 hover:border-indigo-400'
+                  } ${isOwner ? 'cursor-pointer' : ''}`}
                 />
                 {i < nodes.length - 1 && (
-                  <div className={`w-0.5 flex-1 min-h-[40px] ${
-                    node.completed ? 'bg-emerald-300' : 'bg-zinc-200'
+                  <div className={`w-0.5 flex-1 min-h-[40px] transition-colors ${
+                    node.completed ? 'bg-emerald-200' : 'bg-slate-200'
                   }`} />
                 )}
               </div>
@@ -169,27 +185,27 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
                 ) : (
                   <>
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${
-                        node.completed ? 'text-emerald-700 line-through' : ''
+                      <span className={`font-medium text-sm ${
+                        node.completed ? 'text-emerald-600 line-through' : 'text-slate-700'
                       }`}>
                         {node.order_index}. {node.title}
                       </span>
                       {node.tag && (
-                        <span className="text-xs px-1.5 py-0.5 bg-zinc-100 rounded text-zinc-500">
+                        <span className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-medium">
                           {node.tag}
                         </span>
                       )}
                       {isOwner && (
-                        <span className="opacity-0 group-hover:opacity-100 flex gap-1">
+                        <span className="opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity">
                           <button
                             onClick={() => setEditingId(node.id)}
-                            className="text-xs text-zinc-400 hover:text-black"
+                            className="text-xs text-slate-400 hover:text-indigo-600 transition-colors"
                           >
                             编辑
                           </button>
                           <button
                             onClick={() => deleteNode(node.id)}
-                            className="text-xs text-zinc-300 hover:text-red-500"
+                            className="text-xs text-slate-300 hover:text-red-500 transition-colors"
                           >
                             删除
                           </button>
@@ -197,8 +213,8 @@ export default function NodeTimeline({ nodes, isOwner, onNodesChange }: NodeTime
                       )}
                     </div>
                     {deadlineText && (
-                      <div className={`text-xs mt-0.5 ${
-                        node.completed ? 'text-emerald-500' : 'text-zinc-400'
+                      <div className={`text-xs mt-1 ${
+                        node.completed ? 'text-emerald-500' : isOverdue ? 'text-red-400' : 'text-slate-400'
                       }`}>
                         {deadlineText}
                       </div>

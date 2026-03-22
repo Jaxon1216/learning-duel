@@ -63,27 +63,27 @@ export default function RouteTabs({
   }
 
   return (
-    <div className="flex items-center gap-1 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap">
       {routes.map(route => (
         <button
           key={route.id}
           onClick={() => onSelectRoute(route.id)}
-          className={`group inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm transition-colors ${
+          className={`group inline-flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
             activeRouteId === route.id
-              ? 'bg-black text-white'
-              : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700'
+              ? 'bg-indigo-600 text-white shadow-sm'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
           }`}
         >
           {route.name}
           {isOwner && (
-            <span className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 ml-1">
+            <span className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 ml-1 transition-opacity">
               {route.order_index !== 0 && (
                 <span
                   onClick={(e) => pinRoute(route.id, e)}
                   className={`text-[10px] px-1.5 py-0.5 rounded ${
                     activeRouteId === route.id
-                      ? 'bg-white/20 text-white hover:bg-white/40'
-                      : 'bg-zinc-200 text-zinc-500 hover:bg-zinc-300 hover:text-zinc-700'
+                      ? 'bg-white/20 text-white hover:bg-white/30'
+                      : 'bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-700'
                   }`}
                 >
                   置顶
@@ -93,9 +93,9 @@ export default function RouteTabs({
                 onClick={(e) => deleteRoute(route.id, e)}
                 className={`text-xs ${
                   activeRouteId === route.id
-                    ? 'text-zinc-400 hover:text-white'
-                    : 'text-zinc-400 hover:text-red-500'
-                }`}
+                    ? 'text-indigo-300 hover:text-white'
+                    : 'text-slate-400 hover:text-red-500'
+                } transition-colors`}
               >
                 ✕
               </span>
@@ -106,7 +106,7 @@ export default function RouteTabs({
 
       {isOwner && (
         adding ? (
-          <div className="inline-flex items-center gap-1">
+          <div className="inline-flex items-center gap-1.5">
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
@@ -116,16 +116,16 @@ export default function RouteTabs({
               }}
               placeholder="路线名称"
               autoFocus
-              className="px-2 py-1 border border-zinc-200 rounded text-sm w-24"
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-24 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
-            <button onClick={addRoute} className="text-sm text-zinc-600 hover:text-black">
+            <button onClick={addRoute} className="text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
               确定
             </button>
           </div>
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="px-4 py-1.5 border border-dashed border-zinc-300 rounded-full text-sm text-zinc-400 hover:text-zinc-600 hover:border-zinc-400"
+            className="px-4 py-1.5 border border-dashed border-slate-300 rounded-full text-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-colors"
           >
             + 新路线
           </button>
@@ -133,7 +133,7 @@ export default function RouteTabs({
       )}
 
       {routes.length === 0 && !isOwner && (
-        <span className="text-sm text-zinc-400">暂无学习路线</span>
+        <span className="text-sm text-slate-400">暂无学习路线</span>
       )}
     </div>
   )

@@ -67,33 +67,33 @@ export default function ProfileCard({ profile, isOwner, onProfileChange }: Profi
     <>
       <button
         onClick={() => setEditing(true)}
-        className="text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
+        className="text-xs text-slate-400 hover:text-indigo-600 transition-colors"
       >
         编辑资料
       </button>
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setEditing(false)}>
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md space-y-3" onClick={e => e.stopPropagation()}>
-            <div className="text-base font-semibold">编辑个人信息</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setEditing(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-md space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="text-lg font-semibold text-slate-800">编辑个人信息</div>
             <input
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="姓名"
               autoFocus
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
             <input
               value={form.education}
               onChange={e => setForm(f => ({ ...f, education: e.target.value }))}
               placeholder="学历 / 学校"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
             <input
               value={form.bio}
               onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
               placeholder="一句话简介"
-              className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
             />
             <div className="flex gap-2 items-center">
               <div className="flex gap-1">
@@ -101,10 +101,10 @@ export default function ProfileCard({ profile, isOwner, onProfileChange }: Profi
                   <button
                     key={ct}
                     onClick={() => setForm(f => ({ ...f, contact_type: ct }))}
-                    className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       form.contact_type === ct
-                        ? 'bg-black text-white'
-                        : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
                   >
                     {ct}
@@ -115,14 +115,14 @@ export default function ProfileCard({ profile, isOwner, onProfileChange }: Profi
                 value={form.contact_value}
                 onChange={e => setForm(f => ({ ...f, contact_value: e.target.value }))}
                 placeholder="联系方式"
-                className="flex-1 px-3 py-2 border border-zinc-200 rounded-lg text-sm"
+                className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-shadow"
               />
             </div>
-            <div className="flex gap-2 pt-1">
-              <button onClick={save} className="px-4 py-2 bg-black text-white rounded-lg text-sm">
+            <div className="flex gap-3 pt-1">
+              <button onClick={save} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                 保存
               </button>
-              <button onClick={() => setEditing(false)} className="px-4 py-2 text-zinc-500 text-sm hover:text-zinc-700">
+              <button onClick={() => setEditing(false)} className="px-5 py-2.5 text-slate-500 text-sm hover:text-slate-700 transition-colors">
                 取消
               </button>
             </div>
