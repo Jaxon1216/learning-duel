@@ -1,7 +1,8 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
-import { useEffect, useState, useCallback } from 'react'
+import { useUsers, useGoals, useRoutes, useNodes, useProfile, swrKeys, invalidate } from '@/lib/swr-hooks'
+import { useEffect, useState } from 'react'
 import UserList from './components/UserList'
 import GoalBanner from './components/GoalBanner'
 import RouteTabs from './components/RouteTabs'
@@ -11,13 +12,6 @@ import ProfileCard from './components/ProfileCard'
 import Roadmap from './components/Roadmap'
 import Architecture from './components/Architecture'
 
-interface UserWithStats {
-  user_id: string
-  name: string | null
-  total_nodes: number
-  completed_nodes: number
-}
-
 export default function Home() {
   const [session, setSession] = useState<any>(null)
   const [loginEmail, setLoginEmail] = useState('')
@@ -25,19 +19,20 @@ export default function Home() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [authLoading, setAuthLoading] = useState(false)
 
-  const [users, setUsers] = useState<UserWithStats[]>([])
   const [viewingUserId, setViewingUserId] = useState<string | null>(null)
-
-  const [goals, setGoals] = useState<any[]>([])
-  const [routes, setRoutes] = useState<any[]>([])
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
-  const [nodes, setNodes] = useState<any[]>([])
-  const [profile, setProfile] = useState<any>(null)
   const [showAbout, setShowAbout] = useState(false)
   const [showArchitecture, setShowArchitecture] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
 
   const currentUserId = session?.user?.id || null
   const isOwner = currentUserId === viewingUserId
+
+  const { data: users = [] } = useUsers()
+  const { data: goals = [] } = useGoals(viewingUserId)
+  const { data: routes = [] } = useRoutes(viewingUserId)
+  const { data: nodes = [] } = useNodes(activeRouteId)
+  const { data: profile = null } = useProfile(viewingUserId)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -61,52 +56,10 @@ export default function Home() {
           supabase.from('profiles').insert([{
             user_id: currentUserId,
             name: session?.user?.email || null,
-          }]).then(() => fetchUsers())
+          }]).then(() => invalidate(swrKeys.users))
         }
       })
-  }, [currentUserId])
-
-  const fetchUsers = useCallback(async () => {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, name')
-
-    if (!profiles) return
-
-    const { data: allNodes } = await supabase
-      .from('route_nodes')
-      .select('id, completed, route_id')
-
-    const { data: allRoutes } = await supabase
-      .from('routes')
-      .select('id, user_id')
-
-    const routeOwnerMap = new Map<string, string>()
-    allRoutes?.forEach(r => routeOwnerMap.set(r.id, r.user_id))
-
-    const statsMap = new Map<string, { total: number; completed: number }>()
-    allNodes?.forEach(n => {
-      const ownerId = routeOwnerMap.get(n.route_id)
-      if (!ownerId) return
-      const prev = statsMap.get(ownerId) || { total: 0, completed: 0 }
-      prev.total++
-      if (n.completed) prev.completed++
-      statsMap.set(ownerId, prev)
-    })
-
-    const usersWithStats: UserWithStats[] = profiles.map(p => ({
-      user_id: p.user_id,
-      name: p.name,
-      total_nodes: statsMap.get(p.user_id)?.total || 0,
-      completed_nodes: statsMap.get(p.user_id)?.completed || 0,
-    }))
-
-    setUsers(usersWithStats)
-  }, [])
-
-  useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers, session])
+  }, [currentUserId, session?.user?.email])
 
   useEffect(() => {
     if (currentUserId) {
@@ -118,59 +71,18 @@ export default function Home() {
     if (!viewingUserId && users.length > 0) {
       setViewingUserId(users[0].user_id)
     }
-  }, [users])
-
-  const fetchGoals = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('user_id', userId)
-      .order('order_index', { ascending: true })
-    setGoals(data || [])
-  }, [])
-
-  const fetchRoutes = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('routes')
-      .select('*')
-      .eq('user_id', userId)
-      .order('order_index', { ascending: true })
-    setRoutes(data || [])
-    setActiveRouteId(prev => {
-      if (prev && data?.some(r => r.id === prev)) return prev
-      return data?.[0]?.id ?? null
-    })
-  }, [])
-
-  const fetchNodes = useCallback(async (routeId: string) => {
-    const { data } = await supabase
-      .from('route_nodes')
-      .select('*')
-      .eq('route_id', routeId)
-      .order('order_index', { ascending: true })
-    setNodes(data || [])
-  }, [])
-
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-    setProfile(data)
-  }, [])
+  }, [users, viewingUserId])
 
   useEffect(() => {
-    if (!viewingUserId) return
-    fetchGoals(viewingUserId)
-    fetchRoutes(viewingUserId)
-    fetchProfile(viewingUserId)
-  }, [viewingUserId, fetchGoals, fetchRoutes, fetchProfile])
-
-  useEffect(() => {
-    if (activeRouteId) fetchNodes(activeRouteId)
-    else setNodes([])
-  }, [activeRouteId, fetchNodes])
+    if (routes.length > 0) {
+      setActiveRouteId(prev => {
+        if (prev && routes.some((r: any) => r.id === prev)) return prev
+        return routes[0]?.id ?? null
+      })
+    } else {
+      setActiveRouteId(null)
+    }
+  }, [routes])
 
   const handleAuth = async () => {
     if (!loginEmail.trim() || !loginPassword.trim()) return
@@ -200,16 +112,10 @@ export default function Home() {
     }
   }
 
-  const [showLogin, setShowLogin] = useState(false)
-
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setSession(null)
     setViewingUserId(users.length > 0 ? users[0].user_id : null)
-    setGoals([])
-    setRoutes([])
-    setNodes([])
-    setProfile(null)
   }
 
   const handleDeleteAccount = async () => {
@@ -223,11 +129,7 @@ export default function Home() {
       await supabase.auth.signOut()
       setSession(null)
       setViewingUserId(users.length > 0 ? users[0].user_id : null)
-      setGoals([])
-      setRoutes([])
-      setNodes([])
-      setProfile(null)
-      fetchUsers()
+      invalidate(swrKeys.users)
     } else {
       const { error } = await res.json()
       alert(error || '注销失败')
@@ -237,7 +139,6 @@ export default function Home() {
   const handleSelectUser = (userId: string) => {
     setViewingUserId(userId)
     setActiveRouteId(null)
-    setNodes([])
     setShowAbout(false)
     setShowArchitecture(false)
   }
@@ -267,7 +168,6 @@ export default function Home() {
           <Roadmap />
         ) : (
           <div className="space-y-6">
-            {/* Header */}
             <div
               className="flex items-center justify-between animate-fade-in-up"
             >
@@ -280,14 +180,13 @@ export default function Home() {
                   profile={profile}
                   isOwner={isOwner}
                   onProfileChange={() => {
-                    if (viewingUserId) fetchProfile(viewingUserId)
-                    fetchUsers()
+                    if (viewingUserId) invalidate(swrKeys.profile(viewingUserId))
+                    invalidate(swrKeys.users)
                   }}
                 />
               )}
             </div>
 
-            {/* Macro goals */}
             <section
               className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
               style={{ animationDelay: '50ms' }}
@@ -296,11 +195,10 @@ export default function Home() {
               <GoalBanner
                 goals={goals}
                 isOwner={isOwner}
-                onGoalsChange={() => viewingUserId && fetchGoals(viewingUserId)}
+                onGoalsChange={() => viewingUserId && invalidate(swrKeys.goals(viewingUserId))}
               />
             </section>
 
-            {/* Route tabs */}
             <section
               className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
               style={{ animationDelay: '100ms' }}
@@ -312,15 +210,12 @@ export default function Home() {
                 isOwner={isOwner}
                 onSelectRoute={setActiveRouteId}
                 onRoutesChange={() => {
-                  if (viewingUserId) {
-                    fetchRoutes(viewingUserId)
-                    fetchUsers()
-                  }
+                  if (viewingUserId) invalidate(swrKeys.routes(viewingUserId))
+                  invalidate(swrKeys.users)
                 }}
               />
             </section>
 
-            {/* Node timeline */}
             {activeRouteId ? (
               <section
                 className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
@@ -330,17 +225,17 @@ export default function Home() {
                   nodes={nodes}
                   isOwner={isOwner}
                   onNodesChange={() => {
-                    if (activeRouteId) fetchNodes(activeRouteId)
-                    fetchUsers()
+                    if (activeRouteId) invalidate(swrKeys.nodes(activeRouteId))
+                    invalidate(swrKeys.users)
                   }}
                 />
                 {isOwner && (
                   <AddNodeForm
                     routeId={activeRouteId}
-                    nodes={nodes.map(n => ({ id: n.id, title: n.title, order_index: n.order_index }))}
+                    nodes={nodes.map((n: any) => ({ id: n.id, title: n.title, order_index: n.order_index }))}
                     onNodeAdded={() => {
-                      fetchNodes(activeRouteId)
-                      fetchUsers()
+                      invalidate(swrKeys.nodes(activeRouteId))
+                      invalidate(swrKeys.users)
                     }}
                   />
                 )}
@@ -354,7 +249,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Login modal */}
       {showLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowLogin(false)}>
           <div className="bg-white rounded-2xl shadow-2xl p-7 w-full max-w-sm space-y-4 animate-scale-in" onClick={e => e.stopPropagation()}>
