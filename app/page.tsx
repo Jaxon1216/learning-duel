@@ -28,11 +28,13 @@ export default function Home() {
   const currentUserId = session?.user?.id || null
   const isOwner = currentUserId === viewingUserId
 
-  const { data: users = [] } = useUsers()
+  const { data: users = [], isLoading: usersLoading } = useUsers()
   const { data: goals = [] } = useGoals(viewingUserId)
-  const { data: routes = [] } = useRoutes(viewingUserId)
+  const { data: routes = [], isLoading: routesLoading } = useRoutes(viewingUserId)
   const { data: nodes = [] } = useNodes(activeRouteId)
-  const { data: profile = null } = useProfile(viewingUserId)
+  const { data: profile = null, isLoading: profileLoading } = useProfile(viewingUserId)
+
+  const isFirstLoad = usersLoading && users.length === 0
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -166,11 +168,43 @@ export default function Home() {
           <Architecture />
         ) : showAbout ? (
           <Roadmap />
+        ) : isFirstLoad ? (
+          <div className="space-y-6 animate-pulse">
+            <div className="h-7 w-40 bg-slate-200 rounded" />
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[72px]">
+              <div className="h-3 w-16 bg-slate-100 rounded mb-3" />
+              <div className="flex gap-2">
+                <div className="h-8 w-24 bg-slate-100 rounded-full" />
+                <div className="h-8 w-20 bg-slate-100 rounded-full" />
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[72px]">
+              <div className="h-3 w-16 bg-slate-100 rounded mb-3" />
+              <div className="flex gap-2">
+                <div className="h-8 w-20 bg-slate-100 rounded-full" />
+                <div className="h-8 w-28 bg-slate-100 rounded-full" />
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[200px]">
+              <div className="space-y-4">
+                <div className="flex gap-3 items-center">
+                  <div className="w-4 h-4 rounded-full bg-slate-200" />
+                  <div className="h-4 w-48 bg-slate-100 rounded" />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <div className="w-4 h-4 rounded-full bg-slate-200" />
+                  <div className="h-4 w-36 bg-slate-100 rounded" />
+                </div>
+                <div className="flex gap-3 items-center">
+                  <div className="w-4 h-4 rounded-full bg-slate-200" />
+                  <div className="h-4 w-52 bg-slate-100 rounded" />
+                </div>
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="space-y-6">
-            <div
-              className="flex items-center justify-between animate-fade-in-up"
-            >
+            <div className="flex items-center justify-between animate-fade-in">
               <h2 className="text-xl font-semibold text-slate-800 tracking-tight">
                 {profile?.name || '未命名'}
                 {isOwner && <span className="text-slate-400 font-normal text-sm ml-2">的学习空间</span>}
@@ -187,10 +221,7 @@ export default function Home() {
               )}
             </div>
 
-            <section
-              className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
-              style={{ animationDelay: '50ms' }}
-            >
+            <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[72px] animate-fade-in">
               <div className="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider">宏观目标</div>
               <GoalBanner
                 goals={goals}
@@ -199,10 +230,7 @@ export default function Home() {
               />
             </section>
 
-            <section
-              className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
-              style={{ animationDelay: '100ms' }}
-            >
+            <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[72px] animate-fade-in">
               <div className="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider">学习路线</div>
               <RouteTabs
                 routes={routes}
@@ -217,10 +245,7 @@ export default function Home() {
             </section>
 
             {activeRouteId ? (
-              <section
-                className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 animate-fade-in-up"
-                style={{ animationDelay: '150ms' }}
-              >
+              <section className="bg-white rounded-xl border border-slate-200/80 shadow-sm px-6 py-5 min-h-[120px] animate-fade-in">
                 <NodeTimeline
                   nodes={nodes}
                   isOwner={isOwner}
@@ -241,7 +266,7 @@ export default function Home() {
                 )}
               </section>
             ) : (
-              <div className="text-slate-400 text-sm py-4 animate-fade-in-up">
+              <div className="text-slate-400 text-sm py-4 animate-fade-in">
                 {isOwner ? '创建一条学习路线开始吧' : '该用户还没有学习路线'}
               </div>
             )}

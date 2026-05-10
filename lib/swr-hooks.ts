@@ -18,19 +18,13 @@ interface UserWithStats {
 
 export function useUsers() {
   return useSWR<UserWithStats[]>(swrKeys.users, async () => {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, name')
+    const [{ data: profiles }, { data: allNodes }, { data: allRoutes }] = await Promise.all([
+      supabase.from('profiles').select('user_id, name'),
+      supabase.from('route_nodes').select('id, completed, route_id'),
+      supabase.from('routes').select('id, user_id'),
+    ])
 
     if (!profiles) return []
-
-    const { data: allNodes } = await supabase
-      .from('route_nodes')
-      .select('id, completed, route_id')
-
-    const { data: allRoutes } = await supabase
-      .from('routes')
-      .select('id, user_id')
 
     const routeOwnerMap = new Map<string, string>()
     allRoutes?.forEach(r => routeOwnerMap.set(r.id, r.user_id))
@@ -65,6 +59,7 @@ export function useGoals(userId: string | null) {
         .order('order_index', { ascending: true })
       return data || []
     },
+    { keepPreviousData: true },
   )
 }
 
@@ -79,6 +74,7 @@ export function useRoutes(userId: string | null) {
         .order('order_index', { ascending: true })
       return data || []
     },
+    { keepPreviousData: true },
   )
 }
 
@@ -93,6 +89,7 @@ export function useNodes(routeId: string | null) {
         .order('order_index', { ascending: true })
       return data || []
     },
+    { keepPreviousData: true },
   )
 }
 
@@ -107,6 +104,7 @@ export function useProfile(userId: string | null) {
         .single()
       return data
     },
+    { keepPreviousData: true },
   )
 }
 
